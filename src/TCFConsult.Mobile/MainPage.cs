@@ -1,6 +1,8 @@
+using Microsoft.Maui.ApplicationModel;
+using Microsoft.Maui.Controls.Shapes;
+using Microsoft.Maui.Storage;
 using TCFConsult.Application.Ports;
 using TCFConsult.Application.UseCases;
-using Microsoft.Maui.Controls.Shapes;
 
 namespace TCFConsult.Mobile;
 
@@ -32,10 +34,41 @@ public sealed class MainPage : ContentPage
         catch (Exception ex) { _status.Text = $"Erreur : {ex.Message}"; }
     }
 
+    private async Task OpenPdfAsync(TCFConsult.Domain.Document document)
+    {
+        try
+        {
+            await using var source = await _storage.OpenReadAsync(document);
+            if (source is null) { _status.Text = "Ce PDF n’est pas disponible dans le stockage local."; return; }
+            var tempPath = Path.Combine(FileSystem.CacheDirectory, $"{document.Id:N}.pdf");
+            await using (var target = File.Create(tempPath)) await source.CopyToAsync(target);
+            await Launcher.Default.OpenAsync(new OpenFileRequest
+            {
+                Title = document.FileName,
+                File = new ReadOnlyFile(tempPath, "application/pdf")
+            });
+        }
+        catch (Exception ex) { _status.Text = $"Impossible d’ouvrir le PDF : {ex.Message}"; }
+    }
+
     private async Task RefreshAsync()
     {
         _items.Children.Clear();
         foreach (var doc in await _storage.ListAsync())
-            _items.Children.Add(new Border { Padding = 14, Stroke = Color.FromArgb("#DEE5E0"), StrokeShape = new RoundRectangle { CornerRadius = 12 }, Content = new VerticalStackLayout { Children = { new Label { Text = doc.FileName, FontAttributes = FontAttributes.Bold, TextColor = Color.FromArgb("#17372E") }, new Label { Text = $"{doc.CreatedAt.LocalDateTime:g} · {doc.SizeBytes / 1024} Ko", FontSize = 12, TextColor = Colors.Gray } } } });
+        {
+            var openButton = new Button { Text = "Ouvrir le PDF", HeightRequest = 44, BackgroundColor = Color.FromArgb("#E7EFEA"), TextColor = Color.FromArgb("#174A3A"), CornerRadius = 10 };
+            openButton.Clicked += async (_, _) => await OpenPdfAsync(doc);
+            _items.Children.Add(new Border
+            {
+                Padding = 14,
+                Stroke = Color.FromArgb("#DEE5E0"),
+                StrokeShape = new RoundRectangle { CornerRadius = 12 },
+                Content = new VerticalStackLayout { Spacing = 8, Children = {
+                    new Label { Text = doc.FileName, FontAttributes = FontAttributes.Bold, TextColor = Color.FromArgb("#17372E") },
+                    new Label { Text = $"{doc.CreatedAt.LocalDateTime:g} · {doc.SizeBytes / 1024} Ko", FontSize = 12, TextColor = Colors.Gray },
+                    openButton
+                }}
+            });
+        }
     }
 }
