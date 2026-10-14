@@ -1,24 +1,25 @@
+using NativeDocumentScanner = Plugin.Maui.DocumentScanner.IDocumentScanner;
+using Plugin.Maui.DocumentScanner;
 using TCFConsult.Application.Ports;
 
 namespace TCFConsult.Mobile.Platforms.Android;
 
-/// <summary>First safe increment: import one or more scans from the Android system picker.</summary>
-public sealed class AndroidDocumentScanner : IDocumentScanner
+/// <summary>Uses ML Kit's native document scanner for edge detection and perspective correction.</summary>
+public sealed class AndroidDocumentScanner(NativeDocumentScanner scanner) : IDocumentScanner
 {
     public async Task<IReadOnlyList<Stream>> ScanPagesAsync(CancellationToken cancellationToken = default)
     {
-        var files = await FilePicker.Default.PickMultipleAsync(new PickOptions
+        var paths = await scanner.ScanAsync(new DocumentScanOptions
         {
-            PickerTitle = "Choisir les pages scannées",
-            FileTypes = FilePickerFileType.Images
-        });
-        if (files is null) return [];
+            PageLimit = 20,
+            Mode = DocumentScannerMode.Full
+        }, cancellationToken);
 
-        var pages = new List<Stream>();
-        foreach (var file in files)
+        var pages = new List<Stream>(paths.Count);
+        foreach (var path in paths)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            pages.Add(await file.OpenReadAsync());
+            pages.Add(File.OpenRead(path));
         }
         return pages;
     }
