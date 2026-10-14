@@ -4,21 +4,24 @@ Application MAUI de collecte de documents comptables, conçue pour évoluer vers
 
 ## Premier incrément
 
-- Scanner un document depuis Android.
+- Importer des pages photographiées ou scannées depuis le sélecteur Android.
 - Générer un PDF localement.
-- Préparer le dépôt du PDF vers Google Drive via une API sécurisée.
-- Garder les règles métier indépendantes de MAUI et du fournisseur de stockage.
+- Conserver les PDF dans l’espace privé de l’application.
+- Préparer le dépôt vers Google Drive via une API sécurisée.
 
-## Architecture cible
+## Architecture
 
 - `src/TCFConsult.Domain` : entités et règles métier.
 - `src/TCFConsult.Application` : cas d’usage et ports.
-- `src/TCFConsult.Infrastructure` : adaptateurs de stockage, API et persistance.
-- `src/TCFConsult.Mobile` : interface .NET MAUI, scanner et navigation.
-- `tests/` : tests unitaires et d’intégration.
+- `src/TCFConsult.Infrastructure` : adaptateurs de stockage et PDF.
+- `src/TCFConsult.Mobile` : interface .NET MAUI et navigation.
 
-Le premier stockage pourra utiliser le Google Drive personnel du propriétaire. Pour le SaaS, chaque cabinet devra connecter son propre Drive, avec OAuth côté serveur, stockage isolé par tenant et contrôle d’accès côté API. Les jetons OAuth ne doivent pas être intégrés dans l’application mobile.
+Pour le SaaS, chaque cabinet connectera son propre Drive. OAuth sera géré côté serveur, avec stockage isolé par tenant et contrôle d’accès côté API. Aucun jeton OAuth ne sera intégré à l’APK.
 
-## Statut
+## Build Android
 
-Le dépôt vient d’être initialisé. Le prochain incrément est le squelette compilable de la solution MAUI et le flux de scan vers PDF local.
+Chaque push sur `main` lance la compilation et publie l’APK Android comme artefact GitHub Actions sous le nom `TCFConsult-Android-APK` (conservation 14 jours).
+
+## Limites actuelles
+
+Le flux actuel importe des images produites par l’appareil photo ou une autre application. Le scan guidé avec détection des bords et recadrage automatique viendra dans un incrément suivant. L’intégration Google Drive n’est pas encore branchée.
