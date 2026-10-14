@@ -29,10 +29,17 @@ public sealed class LocalDocumentStorage(string rootPath) : IDocumentStorage
     public Task<Stream?> OpenReadAsync(Document document, CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        if (string.IsNullOrWhiteSpace(document.StorageKey)) return Task.FromResult<Stream?>(null);
         var safeKey = Path.GetFileName(document.StorageKey);
-        var path = Path.Combine(_root, safeKey);
-        return Task.FromResult<Stream?>(File.Exists(path) ? File.OpenRead(path) : null);
+        var path = string.IsNullOrWhiteSpace(safeKey) ? string.Empty : Path.Combine(_root, safeKey);
+        if (string.IsNullOrWhiteSpace(safeKey))
+        {
+            // Backward compatibility for documents saved before StorageKey was added to the index.
+            var safeName = Path.GetFileName(document.FileName);
+            path = Directory.Exists(_root)
+                ? Directory.GetFiles(_root, $"*-{safeName}").FirstOrDefault() ?? string.Empty
+                : string.Empty;
+        }
+        return Task.FromResult<Stream?>(!string.IsNullOrEmpty(path) && File.Exists(path) ? File.OpenRead(path) : null);
     }
 
     private async Task<IReadOnlyList<Document>> ReadIndexAsync(CancellationToken cancellationToken)
