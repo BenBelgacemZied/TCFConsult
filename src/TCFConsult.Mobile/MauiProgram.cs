@@ -1,4 +1,3 @@
-using CommunityToolkit.Maui;
 using TCFConsult.Application.Ports;
 using TCFConsult.Application.UseCases;
 using TCFConsult.Infrastructure.Pdf;
@@ -11,7 +10,7 @@ public static class MauiProgram
     public static MauiApp CreateMauiApp()
     {
         var builder = MauiApp.CreateBuilder();
-        builder.UseMauiApp<App>().UseMauiCommunityToolkit();
+        builder.UseMauiApp<App>();
         builder.Services.AddSingleton<IDocumentScanner, Platforms.Android.AndroidDocumentScanner>();
         builder.Services.AddSingleton<IPdfDocumentWriter, PdfDocumentWriter>();
         builder.Services.AddSingleton<IDocumentStorage>(_ => new LocalDocumentStorage(FileSystem.AppDataDirectory));
