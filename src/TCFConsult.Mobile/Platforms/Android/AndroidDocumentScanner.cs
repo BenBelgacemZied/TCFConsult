@@ -1,11 +1,10 @@
 using NativeDocumentScanner = Plugin.Maui.DocumentScanner.IDocumentScanner;
 using Plugin.Maui.DocumentScanner;
-using TCFConsult.Application.Ports;
 
 namespace TCFConsult.Mobile.Platforms.Android;
 
 /// <summary>Uses ML Kit's native document scanner for edge detection and perspective correction.</summary>
-public sealed class AndroidDocumentScanner(NativeDocumentScanner scanner) : IDocumentScanner
+public sealed class AndroidDocumentScanner(NativeDocumentScanner scanner) : TCFConsult.Application.Ports.IDocumentScanner
 {
     public async Task<IReadOnlyList<Stream>> ScanPagesAsync(CancellationToken cancellationToken = default)
     {
