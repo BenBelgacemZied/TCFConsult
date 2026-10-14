@@ -40,7 +40,7 @@ public sealed class MainPage : ContentPage
         {
             await using var source = await _storage.OpenReadAsync(document);
             if (source is null) { _status.Text = "Ce PDF n’est pas disponible dans le stockage local."; return; }
-            var tempPath = Path.Combine(FileSystem.CacheDirectory, $"{document.Id:N}.pdf");
+            var tempPath = System.IO.Path.Combine(FileSystem.CacheDirectory, $"{document.Id:N}.pdf");
             await using (var target = File.Create(tempPath)) await source.CopyToAsync(target);
             await Launcher.Default.OpenAsync(new OpenFileRequest
             {
