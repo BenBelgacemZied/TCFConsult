@@ -1,5 +1,5 @@
 namespace TCFConsult.Mobile;
-public partial class App : Application
+public partial class App : global::Microsoft.Maui.Controls.Application
 {
     public App(MainPage page) { InitializeComponent(); MainPage = new NavigationPage(page); }
 }
